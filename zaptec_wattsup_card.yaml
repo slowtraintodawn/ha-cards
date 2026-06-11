@@ -1,0 +1,195 @@
+type: vertical-stack
+cards:
+
+  # ── 1. Header ─────────────────────────────────────────────────────────────
+  - type: custom:button-card
+    entity: binary_sensor.wattsup_plug
+    show_name: false
+    show_icon: false
+    show_state: false
+    tap_action:
+      action: none
+    styles:
+      card:
+        - padding: 16px 16px 12px
+      grid:
+        - grid-template-areas: '"header"'
+        - grid-template-columns: 1fr
+      custom_fields:
+        header:
+          - width: 100%
+          - text-align: left
+    custom_fields:
+      header: |
+        [[[
+          var plugged  = states['binary_sensor.wattsup_plug'].state === 'on';
+          var charging = states['binary_sensor.wattsup_charging'].state === 'on';
+          var text   = charging ? 'Charging'  : plugged ? 'Connected'  : 'Disconnected';
+          var color  = charging ? '#085041'   : plugged ? '#854F0B'    : 'var(--secondary-text-color)';
+          var bg     = charging ? '#E1F5EE'   : plugged ? '#FAEEDA'    : 'var(--secondary-background-color)';
+          var border = charging ? '#5DCAA5'   : plugged ? '#FAC775'    : 'var(--divider-color)';
+          return '<div style="display:flex;align-items:center;justify-content:space-between;">'
+            + '<div style="display:flex;align-items:center;gap:8px;font-size:15px;font-weight:500;color:var(--primary-text-color);">'
+            + '<ha-icon icon="mdi:ev-station" style="width:20px;height:20px;--mdi-icon-size:20px;color:#1D9E75;flex-shrink:0;"></ha-icon>'
+            + 'Zaptec WattsUp</div>'
+            + '<div style="font-size:12px;padding:3px 10px;border-radius:8px;font-weight:500;'
+            + 'background:' + bg + ';color:' + color + ';border:0.5px solid ' + border + ';">'
+            + text + '</div></div>';
+        ]]]
+
+  # ── 2. Power display ──────────────────────────────────────────────────────
+  - type: custom:button-card
+    entity: sensor.wattsup_charge_power
+    show_name: false
+    show_icon: false
+    show_state: false
+    tap_action:
+      action: none
+    styles:
+      card:
+        - padding: 16px
+        - border-top: 0.5px solid var(--divider-color)
+        - text-align: center
+      grid:
+        - grid-template-areas: '"power"'
+        - grid-template-columns: 1fr
+      custom_fields:
+        power:
+          - width: 100%
+    custom_fields:
+      power: |
+        [[[
+          var power = parseFloat(states['sensor.wattsup_charge_power'].state) || 0;
+          var display = power >= 1000
+            ? (power / 1000).toFixed(2) + ' kW'
+            : Math.round(power) + ' W';
+          return '<div style="font-size:40px;font-weight:500;color:var(--primary-text-color);line-height:1;">'
+            + display + '</div>'
+            + '<div style="font-size:12px;color:var(--secondary-text-color);margin-top:4px;">'
+            + 'Current charge power</div>';
+        ]]]
+
+  # ── 3. Metrics ────────────────────────────────────────────────────────────
+  - type: custom:button-card
+    entity: sensor.wattsup_charge_power
+    show_name: false
+    show_icon: false
+    show_state: false
+    tap_action:
+      action: none
+    styles:
+      card:
+        - padding: 0 16px 16px
+      grid:
+        - grid-template-areas: '"metrics"'
+        - grid-template-columns: 1fr
+      custom_fields:
+        metrics:
+          - width: 100%
+    custom_fields:
+      metrics: |
+        [[[
+          var session  = parseFloat(states['sensor.wattsup_session_total_charge'].state || 0).toFixed(1);
+          var last     = parseFloat(states['sensor.wattsup_completed_session_energy'].state || 0).toFixed(1);
+          var lifetime = Math.round(parseFloat(states['sensor.wattsup_energy_meter'].state || 0)).toLocaleString();
+          var box = 'background:var(--card-background-color);border:1px solid var(--divider-color);'
+                  + 'border-radius:8px;padding:10px 12px;text-align:center;';
+          var label = 'font-size:11px;color:var(--secondary-text-color);margin-bottom:6px;';
+          var value = 'font-size:16px;font-weight:500;color:var(--primary-text-color);';
+          var unit  = 'font-size:11px;color:var(--secondary-text-color);';
+          return '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">'
+            + '<div style="' + box + '"><div style="' + label + '">This session</div>'
+            + '<div style="' + value + '">' + session + ' <span style="' + unit + '">kWh</span></div></div>'
+            + '<div style="' + box + '"><div style="' + label + '">Last session</div>'
+            + '<div style="' + value + '">' + last + ' <span style="' + unit + '">kWh</span></div></div>'
+            + '<div style="' + box + '"><div style="' + label + '">Lifetime</div>'
+            + '<div style="' + value + '">' + lifetime + ' <span style="' + unit + '">kWh</span></div></div>'
+            + '</div>';
+        ]]]
+
+  # ── 4. Connected car (hidden when nothing plugged in) ─────────────────────
+  - type: custom:button-card
+    entity: binary_sensor.wattsup_plug
+    show_name: false
+    show_icon: false
+    show_state: false
+    tap_action:
+      action: none
+    visibility:
+      - condition: state
+        entity: binary_sensor.wattsup_plug
+        state: "on"
+    styles:
+      card:
+        - padding: 16px
+        - border-top: 0.5px solid var(--divider-color)
+      grid:
+        - grid-template-areas: '"car"'
+        - grid-template-columns: 1fr
+      custom_fields:
+        car:
+          - width: 100%
+    custom_fields:
+      car: |
+        [[[
+          var sallyPlugged = states['binary_sensor.sally_plug'].state === 'on';
+          var name, soc, target, range;
+          if (sallyPlugged) {
+            name   = 'Sally';
+            soc    = parseInt(states['sensor.sally_state_of_charge'].state) || 0;
+            target = parseInt(states['sensor.sally_target_state_of_charge'].state) || 80;
+            range  = Math.round(parseFloat(states['sensor.sally_estimated_remaining_driving_range'].state)) || 0;
+          } else {
+            name   = 'Bonnie';
+            soc    = parseInt(states['sensor.tesla_3_p74d_state_of_charge'].state) || 0;
+            target = parseInt(states['sensor.tesla_3_p74d_target_state_of_charge'].state) || 80;
+            range  = Math.round(parseFloat(states['sensor.tesla_3_p74d_estimated_remaining_driving_range'].state)) || 0;
+          }
+          return '<div style="font-size:11px;font-weight:500;color:var(--secondary-text-color);'
+            + 'text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">Connected car</div>'
+            + '<div style="border:0.5px solid #5DCAA5;background:#E1F5EE;border-radius:10px;padding:12px 14px;">'
+            + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'
+            + '<div style="font-size:15px;font-weight:500;color:#085041;">' + name + '</div>'
+            + '<div style="font-size:12px;color:#0F6E56;">' + range + ' km</div></div>'
+            + '<div style="display:flex;align-items:center;gap:10px;">'
+            + '<div style="flex:1;height:6px;background:rgba(15,110,86,0.15);border-radius:3px;position:relative;">'
+            + '<div style="position:absolute;top:0;left:0;width:' + soc + '%;height:100%;background:#1D9E75;border-radius:3px;"></div>'
+            + '<div style="position:absolute;top:-2px;left:' + target + '%;width:2px;height:10px;background:#0F6E56;opacity:0.5;border-radius:1px;"></div>'
+            + '</div>'
+            + '<div style="font-size:13px;font-weight:500;color:#085041;white-space:nowrap;">' + soc + '% '
+            + '<span style="font-size:12px;color:#0F6E56;font-weight:400;">&#8594; ' + target + '%</span></div></div></div>';
+        ]]]
+
+  # ── 5. Charge current slider ─────────────────────────────────────────────
+  - type: custom:mushroom-number-card
+    entity: number.karrsbackevagen_4_available_current
+    name: Charge current
+    icon: mdi:battery-charging
+    icon_color: "#1D9E75"
+
+  # ── 6. Charge Now (hidden when nothing plugged in) ────────────────────────
+  - type: custom:button-card
+    entity: binary_sensor.wattsup_plug
+    name: Charge now
+    show_icon: false
+    show_state: false
+    visibility:
+      - condition: state
+        entity: binary_sensor.wattsup_plug
+        state: "on"
+    tap_action:
+      action: call-service
+      service: switch.turn_on
+      service_data:
+        entity_id: switch.wattsup_charging
+    styles:
+      card:
+        - background: "#1D9E75"
+        - border: none
+        - border-radius: 10px
+        - padding: 14px
+      name:
+        - font-size: 15px
+        - font-weight: 500
+        - color: "#ffffff"
+        - letter-spacing: "0.03em"
