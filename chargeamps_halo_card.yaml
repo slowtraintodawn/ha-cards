@@ -166,6 +166,8 @@ cards:
     name: Charge current
     icon: mdi:battery-charging
     icon_color: "#1D9E75"
+    min: 0
+    max: 16
 
   # ── 6. Charge Now (hidden when nothing plugged in) ────────────────────────
   - type: custom:button-card
