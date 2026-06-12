@@ -161,12 +161,11 @@ cards:
         ]]]
 
   # ── 5. Charge current slider ─────────────────────────────────────────────
-  - type: entities
-    show_header_toggle: false
-    entities:
-      - entity: input_number.halo_charge_current
-        name: Charge current
-        icon: mdi:battery-charging
+  - type: custom:mushroom-number-card
+    entity: input_number.halo_charge_current
+    name: Charge current
+    icon: mdi:battery-charging
+    icon_color: "#1D9E75"
 
   # ── 6. Charge Now (hidden when nothing plugged in) ────────────────────────
   - type: custom:button-card
