@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tesla Overview Card – Sally (Mockup)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #111827;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: #e2e8f0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+
+  .card-wrap {
+    width: 100%;
+    max-width: 480px;
+  }
+
+  /* ── Shared card shell ── */
+  .ha-card {
+    background: #1e2433;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,.5);
+    margin-bottom: 16px;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 18px 12px;
+    border-bottom: 1px solid #2d3748;
+  }
+  .card-header .icon { font-size: 20px; }
+  .card-header h2 { font-size: 15px; font-weight: 600; letter-spacing: .03em; color: #94a3b8; text-transform: uppercase; }
+  .card-header .badge {
+    margin-left: auto;
+    font-size: 11px;
+    background: #2d3748;
+    border-radius: 999px;
+    padding: 2px 10px;
+    color: #94a3b8;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    padding: 18px 18px 10px;
+  }
+  .hero-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .hero-name { font-size: 22px; font-weight: 700; }
+  .hero-sub  { font-size: 12px; color: #64748b; margin-top: 2px; }
+  .status-pill {
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 4px 12px;
+  }
+  .pill-green  { background: #14532d; color: #4ade80; }
+  .pill-blue   { background: #1e3a5f; color: #60a5fa; }
+  .pill-amber  { background: #451a03; color: #fb923c; }
+  .pill-gray   { background: #2d3748; color: #94a3b8; }
+
+  /* ── Car diagram ── */
+  .car-diagram {
+    position: relative;
+    margin: 12px auto 6px;
+    width: 260px;
+    height: 130px;
+  }
+  .car-diagram svg { width: 100%; height: 100%; }
+
+  .door-indicator {
+    position: absolute;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    border: 2px solid #0f172a;
+  }
+  .di-closed { background: #4ade80; }
+  .di-open   { background: #fb923c; }
+  /* positions relative to 260×130 container */
+  .di-fl { top: 28px;  left: 18px; }
+  .di-fr { top: 28px;  right: 18px; }
+  .di-rl { top: 80px;  left: 18px; }
+  .di-rr { top: 80px;  right: 18px; }
+  .di-frunk { top: 10px; left: 50%; transform: translateX(-50%); }
+  .di-trunk { bottom: 6px; left: 50%; transform: translateX(-50%); }
+
+  .diagram-label {
+    position: absolute;
+    font-size: 9px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  .dl-fl  { top: 40px;  left: 2px; }
+  .dl-fr  { top: 40px;  right: 1px; }
+  .dl-rl  { top: 92px;  left: 2px; }
+  .dl-rr  { top: 92px;  right: 1px; }
+  .dl-frunk { top: 0px;  left: 50%; transform: translateX(-50%); }
+  .dl-trunk { bottom: 0px; left: 50%; transform: translateX(-50%); }
+
+  /* ── Grid tile rows ── */
+  .tile-row {
+    display: grid;
+    gap: 8px;
+    padding: 8px 14px;
+  }
+  .tile-row-4  { grid-template-columns: repeat(4, 1fr); }
+  .tile-row-3  { grid-template-columns: repeat(3, 1fr); }
+  .tile-row-2  { grid-template-columns: repeat(2, 1fr); }
+
+  .tile {
+    background: #0f172a;
+    border-radius: 12px;
+    padding: 10px 8px 8px;
+    text-align: center;
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+    transition: background .15s;
+  }
+  .tile:hover { background: #1a2540; }
+
+  .tile-icon  { font-size: 18px; margin-bottom: 4px; }
+  .tile-label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: .04em; }
+  .tile-value { font-size: 12px; font-weight: 600; margin-top: 2px; }
+  .val-green  { color: #4ade80; }
+  .val-amber  { color: #fb923c; }
+  .val-blue   { color: #60a5fa; }
+  .val-gray   { color: #94a3b8; }
+
+  .hold-hint {
+    position: absolute;
+    bottom: 4px; right: 6px;
+    font-size: 8px;
+    color: #334155;
+    font-style: italic;
+  }
+
+  /* ── Section divider ── */
+  .section-divider {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #475569;
+    padding: 10px 14px 2px;
+    font-weight: 600;
+  }
+
+  /* ── Tire pressure ── */
+  .tyre-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 6px;
+    padding: 8px 14px 12px;
+    max-width: 260px;
+    margin: 0 auto;
+  }
+  .tyre-cell {
+    background: #0f172a;
+    border-radius: 10px;
+    padding: 7px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tyre-pos  { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: .04em; min-width: 20px; }
+  .tyre-val  { font-size: 14px; font-weight: 700; }
+  .tyre-unit { font-size: 9px; color: #64748b; }
+  .tyre-warn { font-size: 12px; margin-left: auto; }
+
+  /* ── Charging bar ── */
+  .charge-section { padding: 10px 14px 14px; }
+  .charge-bar-wrap {
+    background: #0f172a;
+    border-radius: 999px;
+    height: 12px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .charge-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #16a34a, #4ade80);
+    transition: width .3s;
+    position: relative;
+  }
+  .charge-bar-fill.charging::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 30px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.3));
+    animation: shimmer 1.2s infinite;
+  }
+  @keyframes shimmer { 0%,100%{opacity:.4} 50%{opacity:1} }
+
+  .charge-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .cstat {
+    background: #0f172a;
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  .cstat-label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 3px; }
+  .cstat-value { font-size: 18px; font-weight: 700; }
+  .cstat-unit  { font-size: 11px; color: #64748b; font-weight: 400; }
+
+  .charge-bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #64748b;
+    margin-bottom: 4px;
+  }
+  .charge-pct { font-size: 14px; font-weight: 700; color: #4ade80; }
+
+  /* ── Climate ── */
+  .climate-section { padding: 10px 14px 14px; }
+
+  .precond-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .big-btn {
+    border-radius: 12px;
+    padding: 12px 8px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    border: 2px solid transparent;
+    transition: all .15s;
+  }
+  .big-btn .btn-icon { font-size: 22px; margin-bottom: 4px; }
+  .big-btn-off   { background: #0f172a; color: #94a3b8; border-color: #2d3748; }
+  .big-btn-blue  { background: #1e3a5f; color: #60a5fa; border-color: #3b82f6; }
+  .big-btn-amber { background: #451a03; color: #fb923c; border-color: #f97316; }
+
+  .temp-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .temp-label { font-size: 11px; color: #64748b; min-width: 80px; text-transform: uppercase; letter-spacing: .04em; }
+  .temp-value { font-size: 22px; font-weight: 700; }
+  .temp-unit  { font-size: 12px; color: #64748b; }
+  .temp-arrow { font-size: 16px; color: #475569; }
+  .temp-target { font-size: 18px; font-weight: 600; color: #60a5fa; }
+
+  /* Slider */
+  .slider-row { margin-bottom: 12px; }
+  .slider-track {
+    background: #0f172a;
+    border-radius: 999px;
+    height: 8px;
+    position: relative;
+    margin: 4px 0 6px;
+  }
+  .slider-fill {
+    background: linear-gradient(90deg, #1d4ed8, #60a5fa);
+    height: 100%;
+    border-radius: 999px;
+    width: 55%;
+  }
+  .slider-thumb {
+    position: absolute;
+    width: 18px; height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    left: 55%;
+    box-shadow: 0 2px 6px rgba(0,0,0,.5);
+  }
+  .slider-range {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    color: #475569;
+  }
+
+  /* Seat heat */
+  .seat-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .seat-tile {
+    background: #0f172a;
+    border-radius: 10px;
+    padding: 8px 4px;
+    text-align: center;
+    cursor: pointer;
+  }
+  .seat-tile:hover { background: #1a2540; }
+  .seat-icon  { font-size: 20px; margin-bottom: 2px; }
+  .seat-label { font-size: 9px; color: #64748b; text-transform: uppercase; letter-spacing: .04em; }
+  .seat-level { font-size: 11px; font-weight: 600; margin-top: 2px; }
+  .seat-dots  { display: flex; justify-content: center; gap: 2px; margin-top: 3px; }
+  .seat-dot   { width: 5px; height: 5px; border-radius: 50%; background: #2d3748; }
+  .seat-dot.on { background: #fb923c; }
+
+  /* ── Page title ── */
+  .page-title {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .page-title h1 { font-size: 24px; font-weight: 800; letter-spacing: -.01em; }
+  .page-title p  { font-size: 12px; color: #475569; margin-top: 4px; }
+
+  /* ── Footer note ── */
+  .mockup-note {
+    text-align: center;
+    font-size: 10px;
+    color: #334155;
+    margin-top: 4px;
+    padding-bottom: 24px;
+  }
+</style>
+</head>
+<body>
+<div class="card-wrap">
+
+  <div class="page-title">
+    <h1>🚗 Sally</h1>
+    <p>Tesla Model 3 · Home Assistant Overview Mockup</p>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       CARD 1 – VEHICLE OVERVIEW
+  ══════════════════════════════════════ -->
+  <div class="ha-card">
+    <div class="card-header">
+      <span class="icon">🚘</span>
+      <h2>Vehicle Status</h2>
+      <span class="badge status-pill pill-green">Locked</span>
+    </div>
+
+    <div class="hero">
+      <div class="hero-top">
+        <div>
+          <div class="hero-name">Sally</div>
+          <div class="hero-sub">Tesla Model 3 Long Range · Last seen 3 min ago</div>
+        </div>
+        <span class="status-pill pill-blue">Parked</span>
+      </div>
+    </div>
+
+    <!-- Car diagram -->
+    <div style="position:relative; display:flex; justify-content:center;">
+      <div class="car-diagram">
+        <!-- SVG car top-down silhouette -->
+        <svg viewBox="0 0 260 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body outline -->
+          <rect x="60" y="10" width="140" height="110" rx="22" fill="#0f172a" stroke="#2d3748" stroke-width="2"/>
+          <!-- Roof cabin -->
+          <rect x="80" y="28" width="100" height="60" rx="10" fill="#1a2540"/>
+          <!-- Front & rear bumpers -->
+          <rect x="75" y="8" width="110" height="10" rx="5" fill="#2d3748"/>
+          <rect x="75" y="112" width="110" height="10" rx="5" fill="#2d3748"/>
+          <!-- Headlights -->
+          <rect x="68" y="12" width="22" height="6" rx="3" fill="#60a5fa" opacity=".6"/>
+          <rect x="170" y="12" width="22" height="6" rx="3" fill="#60a5fa" opacity=".6"/>
+          <!-- Tail lights -->
+          <rect x="68" y="112" width="22" height="6" rx="3" fill="#ef4444" opacity=".7"/>
+          <rect x="170" y="112" width="22" height="6" rx="3" fill="#ef4444" opacity=".7"/>
+          <!-- Wheels -->
+          <ellipse cx="72"  cy="42"  rx="10" ry="14" fill="#0f172a" stroke="#3b82f6" stroke-width="2"/>
+          <ellipse cx="188" cy="42"  rx="10" ry="14" fill="#0f172a" stroke="#3b82f6" stroke-width="2"/>
+          <ellipse cx="72"  cy="90"  rx="10" ry="14" fill="#0f172a" stroke="#3b82f6" stroke-width="2"/>
+          <ellipse cx="188" cy="90"  rx="10" ry="14" fill="#0f172a" stroke="#3b82f6" stroke-width="2"/>
+          <!-- Door split lines -->
+          <line x1="130" y1="28" x2="130" y2="88" stroke="#2d3748" stroke-width="1" stroke-dasharray="3,2"/>
+          <line x1="80"  y1="58" x2="180" y2="58" stroke="#2d3748" stroke-width="1" stroke-dasharray="3,2"/>
+        </svg>
+
+        <!-- Status dots -->
+        <div class="door-indicator di-closed di-fl"></div>
+        <div class="door-indicator di-closed di-fr"></div>
+        <div class="door-indicator di-closed di-rl"></div>
+        <div class="door-indicator di-closed di-rr"></div>
+        <div class="door-indicator di-closed di-frunk"></div>
+        <div class="door-indicator di-closed di-trunk"></div>
+
+        <!-- Labels -->
+        <span class="diagram-label dl-fl">FL</span>
+        <span class="diagram-label dl-fr">FR</span>
+        <span class="diagram-label dl-rl">RL</span>
+        <span class="diagram-label dl-rr">RR</span>
+        <span class="diagram-label dl-frunk">FRUNK</span>
+        <span class="diagram-label dl-trunk">TRUNK</span>
+      </div>
+    </div>
+
+    <!-- DOORS -->
+    <div class="section-divider">Doors &amp; Closures · Hold to Open / Close</div>
+    <div class="tile-row tile-row-4">
+      <div class="tile">
+        <div class="tile-icon">🚪</div>
+        <div class="tile-label">Front Left</div>
+        <div class="tile-value val-green">Closed</div>
+        <span class="hold-hint">hold</span>
+      </div>
+      <div class="tile">
+        <div class="tile-icon">🚪</div>
+        <div class="tile-label">Front Right</div>
+        <div class="tile-value val-green">Closed</div>
+        <span class="hold-hint">hold</span>
+      </div>
+      <div class="tile">
+        <div class="tile-icon">🚪</div>
+        <div class="tile-label">Rear Left</div>
+        <div class="tile-value val-green">Closed</div>
+        <span class="hold-hint">hold</span>
+      </div>
+      <div class="tile">
+        <div class="tile-icon">🚪</div>
+        <div class="tile-label">Rear Right</div>
+        <div class="tile-value val-green">Closed</div>
+        <span class="hold-hint">hold</span>
+      </div>
+    </div>
+
+    <div class="tile-row tile-row-3">
+      <div class="tile">
+        <div class="tile-icon">📦</div>
+        <div class="tile-label">Frunk</div>
+        <div class="tile-value val-green">Closed</div>
+        <span class="hold-hint">hold</span>
+      </div>
+      <div class="tile">
+        <div class="tile-icon">🛄</div>
+        <div class="tile-label">Boot / Trunk</div>
+        <div class="tile-value val-green">Closed</div>
+        <span class="hold-hint">hold</span>
+      </div>
+      <div class="tile">
+        <div class="tile-icon">🪟</div>
+        <div class="tile-label">Windows</div>
+        <div class="tile-value val-green">All Closed</div>
+        <span class="hold-hint">hold</span>
+      </div>
+    </div>
+
+    <!-- TYRES -->
+    <div class="section-divider">Tyre Pressure</div>
+    <div class="tyre-grid">
+      <div class="tyre-cell">
+        <span class="tyre-pos">FL</span>
+        <span class="tyre-val val-green">36</span>
+        <span class="tyre-unit">psi</span>
+      </div>
+      <div class="tyre-cell">
+        <span class="tyre-pos">FR</span>
+        <span class="tyre-val val-green">36</span>
+        <span class="tyre-unit">psi</span>
+      </div>
+      <div class="tyre-cell">
+        <span class="tyre-pos">RL</span>
+        <span class="tyre-val val-green">36</span>
+        <span class="tyre-unit">psi</span>
+      </div>
+      <div class="tyre-cell">
+        <span class="tyre-pos">RR</span>
+        <span class="tyre-val val-amber">34</span>
+        <span class="tyre-unit">psi</span>
+        <span class="tyre-warn">⚠️</span>
+      </div>
+    </div>
+
+  </div><!-- /vehicle card -->
+
+
+  <!-- ══════════════════════════════════════
+       CARD 2 – CHARGING
+  ══════════════════════════════════════ -->
+  <div class="ha-card">
+    <div class="card-header">
+      <span class="icon">⚡</span>
+      <h2>Charging</h2>
+      <span class="badge status-pill pill-green">Charging</span>
+    </div>
+
+    <div class="charge-section">
+      <div class="charge-bar-label">
+        <span>State of Charge</span>
+        <span class="charge-pct">72%</span>
+      </div>
+      <div class="charge-bar-wrap">
+        <div class="charge-bar-fill charging" style="width:72%"></div>
+      </div>
+
+      <div class="charge-stats">
+        <div class="cstat">
+          <div class="cstat-label">Estimated Range</div>
+          <div class="cstat-value">
+            <span>243</span>
+            <span class="cstat-unit">km</span>
+          </div>
+        </div>
+        <div class="cstat">
+          <div class="cstat-label">Charge Rate</div>
+          <div class="cstat-value">
+            <span>11</span>
+            <span class="cstat-unit">kW</span>
+          </div>
+        </div>
+        <div class="cstat">
+          <div class="cstat-label">Time to Full</div>
+          <div class="cstat-value">
+            <span>1h 42</span>
+            <span class="cstat-unit">min</span>
+          </div>
+        </div>
+        <div class="cstat">
+          <div class="cstat-label">Added Energy</div>
+          <div class="cstat-value">
+            <span>18.4</span>
+            <span class="cstat-unit">kWh</span>
+          </div>
+        </div>
+        <div class="cstat">
+          <div class="cstat-label">Charge Limit</div>
+          <div class="cstat-value">
+            <span>90</span>
+            <span class="cstat-unit">%</span>
+          </div>
+        </div>
+        <div class="cstat">
+          <div class="cstat-label">Charger Voltage</div>
+          <div class="cstat-value">
+            <span>240</span>
+            <span class="cstat-unit">V</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /charging card -->
+
+
+  <!-- ══════════════════════════════════════
+       CARD 3 – CLIMATE & PRECONDITIONING
+  ══════════════════════════════════════ -->
+  <div class="ha-card">
+    <div class="card-header">
+      <span class="icon">🌡️</span>
+      <h2>Climate &amp; Preconditioning</h2>
+      <span class="badge status-pill pill-gray">Off</span>
+    </div>
+
+    <div class="climate-section">
+
+      <!-- Precondition / Defrost buttons -->
+      <div class="precond-row">
+        <div class="big-btn big-btn-off">
+          <div class="btn-icon">❄️</div>
+          <div>Precondition</div>
+          <div style="font-size:10px;color:#64748b;margin-top:3px;font-weight:400">Hold to activate</div>
+        </div>
+        <div class="big-btn big-btn-off">
+          <div class="btn-icon">🌡️</div>
+          <div>Defrost</div>
+          <div style="font-size:10px;color:#64748b;margin-top:3px;font-weight:400">Hold to activate</div>
+        </div>
+      </div>
+
+      <!-- Current / target temp -->
+      <div style="background:#0f172a;border-radius:12px;padding:12px 14px;margin-bottom:10px;">
+        <div class="temp-row" style="margin-bottom:10px;">
+          <span class="temp-label">Interior Now</span>
+          <span class="temp-value">17</span>
+          <span class="temp-unit">°C</span>
+          <span class="temp-arrow">→</span>
+          <span class="temp-target">21°C</span>
+        </div>
+        <!-- Target temp slider -->
+        <div class="slider-row">
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:#64748b;margin-bottom:4px;">
+            <span>Target Temperature</span>
+            <span style="color:#60a5fa;font-weight:600;">21°C</span>
+          </div>
+          <div class="slider-track">
+            <div class="slider-fill"></div>
+            <div class="slider-thumb"></div>
+          </div>
+          <div class="slider-range">
+            <span>16°C</span>
+            <span>28°C</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seat heating -->
+      <div class="section-divider" style="padding-left:0;margin-bottom:8px;">Seat Heating</div>
+      <div class="seat-row">
+        <div class="seat-tile">
+          <div class="seat-icon">🪑</div>
+          <div class="seat-label">Driver</div>
+          <div class="seat-level val-gray">Off</div>
+          <div class="seat-dots">
+            <div class="seat-dot"></div>
+            <div class="seat-dot"></div>
+            <div class="seat-dot"></div>
+          </div>
+        </div>
+        <div class="seat-tile">
+          <div class="seat-icon">🪑</div>
+          <div class="seat-label">Passenger</div>
+          <div class="seat-level val-gray">Off</div>
+          <div class="seat-dots">
+            <div class="seat-dot"></div>
+            <div class="seat-dot"></div>
+            <div class="seat-dot"></div>
+          </div>
+        </div>
+        <div class="seat-tile">
+          <div class="seat-icon">🪑</div>
+          <div class="seat-label">Rear Left</div>
+          <div class="seat-level val-gray">Off</div>
+          <div class="seat-dots">
+            <div class="seat-dot"></div>
+            <div class="seat-dot"></div>
+            <div class="seat-dot"></div>
+          </div>
+        </div>
+        <div class="seat-tile">
+          <div class="seat-icon">🪑</div>
+          <div class="seat-label">Rear Right</div>
+          <div class="seat-level val-gray">Off</div>
+          <div class="seat-dots">
+            <div class="seat-dot"></div>
+            <div class="seat-dot"></div>
+            <div class="seat-dot"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Example: seat heating active state note -->
+      <div style="margin-top:10px;padding:8px 12px;background:#1c1917;border-radius:10px;border-left:3px solid #fb923c;font-size:11px;color:#94a3b8;">
+        <strong style="color:#fb923c;">Active example</strong> — tap a seat tile to cycle Off → Low → Med → High. Dots fill orange per level.
+      </div>
+
+    </div>
+  </div><!-- /climate card -->
+
+  <div class="mockup-note">
+    ✦ Mockup only — no live data · Dot colours: 🟢 closed/ok &nbsp;🟠 open/warn · "hold" = press-and-hold action
+  </div>
+
+</div><!-- /card-wrap -->
+</body>
+</html>
